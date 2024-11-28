@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Todo App{% endblock title %}</title>
+    {% load static %}
+    {% load static tailwind_tags %}
+    {% tailwind_css %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="{% url 'todos:index' %}" class="text-2xl font-bold text-sky-600">Todo App</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    {% if user.is_authenticated %}
+                        <span class="text-gray-700 px-3">{{ user.username }}</span>
+                        <a href="{% url 'account_logout' %}" 
+                           class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700">
+                            Sign Out
+                        </a>
+                    {% else %}
+                        <a href="{% url 'account_login' %}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-sky-600 bg-white hover:bg-gray-50">
+                            Sign In
+                        </a>
+                        <a href="{% url 'account_signup' %}" 
+                           class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700">
+                            Sign Up
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock content %}
+    </main>
+</body>
+</html>

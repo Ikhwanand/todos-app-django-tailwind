@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Login{% endblock title %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
+        <div>
+            <h2 class="mt-4 text-center text-3xl font-extrabold text-gray-900">
+                {% trans "Sign In" %}
+            </h2>
+        </div>
+        <form class="mt-8 space-y-6" method="POST" action="{% url 'account_login' %}">
+            {% csrf_token %}
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="id_login" class="sr-only">Username</label>
+                    <input id="id_login" name="login" type="text" required
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                        placeholder="Username">
+                </div>
+                <div>
+                    <label for="id_password" class="sr-only">Password</label>
+                    <input id="id_password" name="password" type="password" required
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                        placeholder="Password">
+                </div>
+            </div>
+
+            {% if form.errors %}
+            <div class="rounded-md bg-red-50 p-4 mt-4">
+                <div class="text-sm text-red-700">
+                    {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div>
+                <button type="submit"
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                    {% trans "Sign In" %}
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div class="text-sm">
+                    <a href="{% url 'account_signup' %}" class="font-medium text-sky-600 hover:text-sky-500">
+                        {% trans "Don't have an account? Sign Up" %}
+                    </a>
+                </div>
+                <div class="text-sm">
+                    <a href="{% url 'account_reset_password' %}" class="font-medium text-sky-600 hover:text-sky-500">
+                        {% trans "Forgot Password?" %}
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

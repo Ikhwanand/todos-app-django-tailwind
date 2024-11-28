@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Todos App{% endblock title %}
+
+{% block content %}
+<div class="w-4/5 my-6 mx-auto p-2 lg:p-10 bg-white rounded-xl">
+    <!-- Edit Todo Modal -->
+    <div id="editModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Task</h3>
+            <form id="editTodoForm" method="POST">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div>
+                        <label for="editTitle" class="block text-sm font-medium text-gray-700">Task Title</label>
+                        <input type="text" name="title" id="editTitle" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="editDescription" class="block text-sm font-medium text-gray-700">Description (Optional)</label>
+                        <textarea name="description" id="editDescription" rows="3"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancelEdit"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Todo Form -->
+    <form id="addTodoForm" action="{% url 'todos:add_todo' %}" method="POST" class="mb-8">
+        {% csrf_token %}
+        <div class="space-y-4">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Task Title</label>
+                <input type="text" name="title" id="title" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                    placeholder="Enter your task">
+            </div>
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Description (Optional)</label>
+                <textarea name="description" id="description" rows="3"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                    placeholder="Add task details"></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add Task
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="hidden mb-4 rounded-md bg-green-50 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">Task added successfully!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Todos List -->
+    <div class="bg-white overflow-hidden sm:rounded-lg">
+        {% for todo in todos %}
+        <article class="flex flex-col md:flex-row border-b border-gray-200 last:border-b-0">
+            <div class="w-4/5 py-3">
+                <p class="px-6 text-xs text-gray-900 {% if todo.completed %}line-through text-gray-500{% endif %}" 
+                   data-todo-id="{{ todo.id }}">
+                    {{ todo.title }}
+                </p>
+                {% if todo.description %}
+                <p class="px-6 mt-1 text-xs text-gray-500 {% if todo.completed %}line-through{% endif %}">
+                    {{ todo.description }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="w-1/5 px-6 py-3 flex justify-end space-x-4">
+                <a href="{% url 'todos:complete_todo' todo.pk %}" class="text-sky-600 hover:text-sky-900 complete-todo" 
+                   data-todo-id="{{ todo.id }}">
+                    {% if todo.completed %}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    {% endif %}
+                </a>
+                <a href="{% url 'todos:edit_todo' todo.pk %}" class="text-sky-600 hover:text-sky-900 edit-todo" data-todo-id="{{ todo.id }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                    </svg>
+                </a>
+                <a href="{% url 'todos:delete_todo' todo.pk %}" class="text-sky-600 hover:text-sky-900 delete-todo" 
+                   data-todo-id="{{ todo.id }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="text-center py-8">
+            <p class="text-gray-500">No tasks yet. Add your first task above!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add Todo Form Submission
+        const addTodoForm = document.getElementById('addTodoForm');
+        const successMessage = document.getElementById('successMessage');
+
+        addTodoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Clear form
+                    this.reset();
+                    
+                    // Show success message
+                    successMessage.classList.remove('hidden');
+                    setTimeout(() => {
+                        successMessage.classList.add('hidden');
+                    }, 3000);
+
+                    // Reload the page to show new todo
+                    window.location.reload();
+                }
+            });
+        });
+
+        // Handle complete todo
+        document.querySelectorAll('.complete-todo').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const todoId = this.dataset.todoId;
+                const todoText = document.querySelector(`p[data-todo-id="${todoId}"]`);
+                
+                // Toggle the line-through effect with a smooth transition
+                todoText.style.transition = 'all 0.3s ease';
+                todoText.classList.toggle('line-through');
+                todoText.classList.toggle('text-gray-500');
+                
+                // Send the request to update the todo status
+                fetch(this.href, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(response => {
+                    if (!response.ok) {
+                        // If there's an error, revert the visual change
+                        todoText.classList.toggle('line-through');
+                        todoText.classList.toggle('text-gray-500');
+                    }
+                });
+            });
+        });
+
+        // Add hover effect to todo items
+        document.querySelectorAll('article').forEach(article => {
+            article.addEventListener('mouseenter', function() {
+                this.classList.add('bg-gray-50');
+            });
+            article.addEventListener('mouseleave', function() {
+                this.classList.remove('bg-gray-50');
+            });
+        });
+    });
+
+    // Edit Todo Functionality
+const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editTodoForm');
+const cancelEditBtn = document.getElementById('cancelEdit');
+const editTitle = document.getElementById('editTitle');
+const editDescription = document.getElementById('editDescription');
+
+// Show edit modal
+document.querySelectorAll('.edit-todo').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const todoId = this.dataset.todoId;
+        const todoArticle = this.closest('article');
+        const titleElement = todoArticle.querySelector('p[data-todo-id]');
+        const descriptionElement = todoArticle.querySelector('p.text-gray-500');
+
+        // Set form action
+        editForm.action = this.href;
+        
+        // Set current values
+        editTitle.value = titleElement.textContent.trim();
+        editDescription.value = descriptionElement ? descriptionElement.textContent.trim() : '';
+        
+        // Show modal
+        editModal.classList.remove('hidden');
+    });
+});
+
+// Hide edit modal
+cancelEditBtn.addEventListener('click', () => {
+    editModal.classList.add('hidden');
+});
+
+// Close modal when clicking outside
+editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) {
+        editModal.classList.add('hidden');
+    }
+});
+
+// Handle edit form submission
+editForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Hide modal
+            editModal.classList.add('hidden');
+            
+            // Show success message
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 3000);
+
+            // Reload the page to show updated todo
+            window.location.reload();
+        }
+    });
+});
+</script>
+{% endblock content %}
